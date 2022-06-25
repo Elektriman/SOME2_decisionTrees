@@ -33,6 +33,9 @@ class tree_empty(tree):
     def update_depth(self, depth):
         pass
     
+    def lines(self, region):
+        return []
+    
 class tree_filled(tree):
     """
     sous classe d'arbre plein
@@ -52,8 +55,8 @@ class tree_filled(tree):
     """
     
     def __init__(self, left:tree, right:tree, seuil:float, div=""):
-        self.l = left
-        self.r = right
+        self.l = left #également bottom
+        self.r = right #également top
         self.s = seuil
         self.div = div
         self.depth = 0
@@ -113,7 +116,6 @@ class tree_filled(tree):
             segment = [[x1,y1],[x2,y2]]
 
         """
-        print(region)
         
         if self.isleaf():
             #si c'est une feuille
@@ -129,8 +131,8 @@ class tree_filled(tree):
             #on coupe en fonction du seuil et de l'axe
             if self.div=="x" :
                 #on calcule les deux nouvelles régions créées
-                leftRegion = [[region[0][0],self.s],[region[1][0],region[1][1]]]
-                rightRegion = [[region[0][0],region[0][1]],[self.s,region[1][1]]]
+                rightRegion= [[self.s,region[0][1]],[region[1][0],region[1][1]]]
+                leftRegion = [[region[0][0],region[0][1]],[self.s,region[1][1]]]
                 line = [[[self.s, region[0][1]], [self.s ,region[1][1]]]]
                 
                 #puis on ajoute les division des sous régions en plus de l'actuelle séparation
@@ -138,7 +140,7 @@ class tree_filled(tree):
             
             elif self.div=="y" :
                 botRegion = [[region[0][0],region[0][1]],[region[1][0],self.s]]
-                topRegion = [[self.s,region[0][1]],[region[1][0],region[1][1]]]
+                topRegion = [[region[0][0],self.s],[region[1][0],region[1][1]]]
                 line = [[[region[0][0], self.s], [region[1][0], self.s]]]
                 return line + self.l.lines(botRegion) + self.r.lines(topRegion)
                 
@@ -147,19 +149,20 @@ class tree_filled(tree):
 if __name__=="__main__":
     #création d'un arbre test
     region =  [[0,0],[1,1]]
-    T1 = tree_filled(tree_empty(),tree_empty(),1/4,"x")
-    T2 = T1.Tdeepcopy()
-    T3 = tree_filled(T1, T2, 3/4, "y")
-    T4 = tree_filled(T1, T3, 1/2, "x")
-    T5 = tree_filled(T1, T4, 1/2, "y")
-    Lines = T5.lines(region)
+    T1 = tree_filled(tree_empty(),tree_empty(),3/4,"x")
+    T2 = tree_filled(tree_empty(),tree_empty(),1/4,"y")
+    T3 = tree_filled(tree_empty(),T1,3/4,"y")
+    T4 = tree_filled(tree_empty(),T2,1/2,"x")
+    T5 = tree_filled(tree_empty(),T3,1/4,"x")
+    T6 = tree_filled(T4,T5,1/2,"y")
+    Lines = T6.lines(region)
     #vérification de la fonction profondeur
-    print(T1.depth,T2.depth,T3.depth,T4.depth,T5.depth)
+    print(T1.depth,T2.depth,T3.depth,T4.depth,T5.depth, T6.depth)
     
     #déboggage en cours
     print(Lines)
     for l in Lines :
-        plt.plot(l[0], l[1])
+        plt.plot([l[0][0],l[1][0]], [l[0][1],l[1][1]])
     plt.xlim(region[0][0], region[1][0])
     plt.xlim(region[0][1], region[1][1])
 
