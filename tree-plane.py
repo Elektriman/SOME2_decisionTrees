@@ -5,8 +5,24 @@ Created on Fri Jun 24 11:26:25 2022
 @author: Crambes
 """
 
+#  _____                            _       
+# |_   _|                          | |      
+#   | |  _ __ ___  _ __   ___  _ __| |_ ___ 
+#   | | | '_ ` _ \| '_ \ / _ \| '__| __/ __|
+#  _| |_| | | | | | |_) | (_) | |  | |_\__ \
+# |_____|_| |_| |_| .__/ \___/|_|   \__|___/
+#                 | |                       
+#                 |_|
+
 from abc import ABC
 import matplotlib.pyplot as plt
+
+#   _____ _                         
+#  / ____| |                        
+# | |    | | __ _ ___ ___  ___  ___ 
+# | |    | |/ _` / __/ __|/ _ \/ __|
+# | |____| | (_| \__ \__ \  __/\__ \
+#  \_____|_|\__,_|___/___/\___||___/
 
 class tree(ABC) :
     """
@@ -144,7 +160,12 @@ class tree_filled(tree):
                 line = [[[region[0][0], self.s], [region[1][0], self.s]]]
                 return line + self.l.lines(botRegion) + self.r.lines(topRegion)
                 
-
+#  _            _       
+# | |          | |      
+# | |_ ___  ___| |_ ___ 
+# | __/ _ \/ __| __/ __|
+# | ||  __/\__ \ |_\__ \
+#  \__\___||___/\__|___/
 
 if __name__=="__main__":
     #création d'un arbre test
@@ -159,41 +180,8 @@ if __name__=="__main__":
     #vérification de la fonction profondeur
     print(T1.depth,T2.depth,T3.depth,T4.depth,T5.depth, T6.depth)
     
-    #déboggage en cours
     print(Lines)
     for l in Lines :
         plt.plot([l[0][0],l[1][0]], [l[0][1],l[1][1]])
     plt.xlim(region[0][0], region[1][0])
     plt.xlim(region[0][1], region[1][1])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
