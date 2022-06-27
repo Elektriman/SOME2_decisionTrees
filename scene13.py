@@ -38,8 +38,14 @@ def manimise_tree(T:Tree)->tuple[Mobject, dict] :
     L = {}
     L[T.id] = T.label
 
-    #fonction récursive pour ajouter les points et traits au graphe
-    def graph_from_tree(T:Tree):
+    def graph_from_tree(T:Tree, G:Graph):
+        """
+        procédure récursive pour ajouter les points et traits au graphe
+        Parameters
+        ----------
+        T : Tree
+            l'arbre dont on veut fabriquer le graphe
+        """
         #noeud vide ?
         if T.isempty():
             return None #condition d'arrêt
@@ -55,12 +61,12 @@ def manimise_tree(T:Tree)->tuple[Mobject, dict] :
 
             #si les noeuds enfants ne sont pas vides on répète l'opération
             if not T.r.isempty() :
-                graph_from_tree(T.r)
+                graph_from_tree(T.r, G)
 
             if not T.l.isempty():
-                graph_from_tree(T.l)
+                graph_from_tree(T.l, G)
 
-    graph_from_tree(T)
+    graph_from_tree(T, G)
 
     return G,L
 
@@ -104,6 +110,7 @@ def manimise_separation(L:list, region:tuple)->Mobject :
 def adjust_dot_size(G:Graph):
     """
     procédure qui ajuste la taille des points : plus gros si il y a du texte dedans
+    
     Parameters
     ----------
     G : Graph
@@ -111,7 +118,7 @@ def adjust_dot_size(G:Graph):
     """
     for m in G: #on parcourt les mobjects qui composent le graphe
         if m.__class__.__name__ == "LabeledDot": #on ne conserve que les points
-            if len(a[1]) > 0: #on vérifie si les points ont un texte non-vide
+            if len(m[1]) > 0: #on vérifie si les points ont un texte non-vide
                 m.set(width=0.7)
             else:
                 m.set(width=0.3)
