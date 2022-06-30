@@ -10,6 +10,7 @@
 from manim import *
 import networkx as nx
 from tree import *
+import inspect
 
 #  ______                _   _
 # |  ____|              | | (_)
@@ -18,110 +19,75 @@ from tree import *
 # | |  | |_| | | | | (__| |_| | (_) | | | \__ \
 # |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
 
-def manimise_tree(T:Tree)->tuple[Mobject, dict] :
+def elements_in_order(T:Tree, region=None)->tuple :
     """
-    transforme un objet de type Tree en un objet Manim de type Graph associé à un dictionnaire du contenu à écrire sur chaque noeud
+    renvoie les éléments à animer pour créer l'arbre dans l'ordre de création
+
     Parameters
     ----------
     T : Tree
-        Arbre à mettre au format Manim
+        l'arbre à créer
+    region : tuple
+        [[x0, y0],[x1, y1]] la région correspondant au schéma de séparation associé à l'arbre
 
     Returns
     -------
-        G : Graph
-            un objet Manim consitué d'une liste de points et de traits
-        L : dict[int:str]
-            un dictionnaire ayant pour clé l'identifiant d'un noeud et pour valeur associée la chaine de caractères à écrire sur ce noeud
+    graph : Group[Mobject]
+        le groupe de tous es Mobjects représentant l'arbre
+    separation : Group[Mobject], optional
+        (optionnel) le groupe de tous les mobjects représentant le schéma de séparation de l'arbre
     """
-    G = nx.Graph()
-    G.add_node(T.id)
-    L = {}
-    L[T.id] = T.label
+    G = tuple()
 
-    def graph_from_tree(T:Tree, G:Graph):
-        """
-        procédure récursive pour ajouter les points et traits au graphe
-        Parameters
-        ----------
-        T : Tree
-            l'arbre dont on veut fabriquer le graphe
-        """
-        #noeud vide ?
-        if T.isempty():
-            return None #condition d'arrêt
-        else :
-            #sinon on ajoute les noeuds de gauche et droite
-            G.add_node(T.r.id)
-            G.add_edge(T.id, T.r.id)
-            L[T.r.id] = T.r.label
+    if region : #si une région est spécifiée on renvoie le schéma de séparation
 
-            G.add_node(T.l.id)
-            G.add_edge(T.id, T.l.id)
-            L[T.l.id] = T.l.label
+        #création des axes
 
-            #si les noeuds enfants ne sont pas vides on répète l'opération
-            if not T.r.isempty() :
-                graph_from_tree(T.r, G)
+        # on divise les axes en 10 segmentations par défaut
+        dx = abs(region[0][0] - region[1][0]) / 10
+        dy = abs(region[0][1] - region[1][1]) / 10
 
-            if not T.l.isempty():
-                graph_from_tree(T.l, G)
+        axes = Axes(
+            x_range=[region[0][0], region[1][0], dx],
+            y_range=[region[0][1], region[1][1], dy],
+            x_length=6,  # ajustement de la taille originale, peut être modifié ultérieurement
+            y_length=6,
+            axis_config={"color": GREEN, "include_numbers": True},
+            tips=False
+        )
+        L = tuple() #liste des lignes de séparations
 
-    graph_from_tree(T, G)
+    #tri des noeuds du moins profond au plus profond, puis de gauche à droite
+    Nodes = sorted(T.all_nodes, key = lambda t:(t.depth, t.pos[0]))
 
-    return G,L
+    for n in Nodes :
 
-def manimise_separation(L:list, region:tuple)->Mobject :
-    """
-    génère un Vectorised Mobject avec des axes et la séparation du plan en suivant les lignes données dans la liste L
+        #ajout de la ligne qui va du parent à l'actuel noeud
+        if n.parent :
+            G += (Line(start = [n.parent.pos[0], n.parent.pos[1], 0], end = [n.pos[0], n.pos[1], 0], z_index=-1),)
 
-    Parameters
-    ----------
-    L : list[list]
-        liste des segments à tracer de la forme [[début, fin], ...]
-    region : list[list]
-        liste des deux points formant les coins de l'espace sur lequel on a effectué la séparation
+        #ajout du noeud
+        if isinstance(n, Tree_filled): #cas où le noeud contient de l'écriture
+            G += (LabeledDot(n.label, point=[n.pos[0], n.pos[1], 0]).set(width=0.45),)
 
-    Returns
-    -------
-    VGroup[Axes, VGroup[Line]]
-        renvoie un groupe de 2 mobjects, un étant les axes du shéma, l'autre étant l'ensemble des segments représentant les séparations
-    """
-    #on divise les axes en 10 segmentations par défaut
-    dx = abs(region[0][0]-region[1][0])/10
-    dy = abs(region[0][1]-region[1][1])/10
+            # le noeud décrit une séparation des données donc on ajoute la ligne de séparation correspondante dans la bonne liste
+            if region :
+                #on utilise coord_to_point pour avoir la position relative au repère créé plus tôt.
+                sep_line = Line(start=axes.coords_to_point(n.line[0][0], n.line[0][1]), end=axes.coords_to_point(n.line[1][0], n.line[1][1]))
+                L += (sep_line,)
 
-    #création des axes x et y
-    axes = Axes(
-        x_range = [region[0][0], region[1][0], dx],
-        y_range = [region[0][1], region[1][1], dy],
-        x_length = 6, #ajustement de la taille originale, peut être modifié ultérieurement
-        y_length = 6,
-        axis_config={"color": GREEN, "include_numbers": True},
-        tips=False
-    )
-    #création du groupe de lignes
-    Sep = VGroup()  # groupe des séparations
-    for el in L : #ajout de chaque ligne
-        Sep.add(Line(el[0]+[0], el[1]+[0]))
-    Sep.move_to([0,0,0]).scale(6) #alignement avec les axes
+        else: #cas où le noeud est une feuille
+            G += (Dot(point=[n.pos[0], n.pos[1], 0]).set(width=0.15),)
 
-    return VGroup(axes,Sep)
-
-def adjust_dot_size(G:Graph):
-    """
-    procédure qui ajuste la taille des points : plus gros si il y a du texte dedans
-    
-    Parameters
-    ----------
-    G : Graph
-        le graphe dont on veut ajuster la taille des points
-    """
-    for m in G: #on parcourt les mobjects qui composent le graphe
-        if m.__class__.__name__ == "LabeledDot": #on ne conserve que les points
-            if len(m[1]) > 0: #on vérifie si les points ont un texte non-vide
-                m.set(width=0.7)
-            else:
-                m.set(width=0.3)
+    if region : #si on renvoie le schéma
+        graph = Group(*G)
+        separation = Group(axes, *L)
+        #on ajuste la taille du schéma et on l'accole à gauche de l'arbre
+        separation.match_height(graph).next_to(graph, LEFT)
+        separation.add_updater(lambda m:m.match_height(graph).next_to(graph, LEFT))
+        return graph, separation
+    else :
+        return Group(*G)
 
 #  __  __       _
 # |  \/  |     (_)
@@ -141,18 +107,25 @@ class Scene13(Scene):
         T5 = Tree_filled(Tree_empty(), T2, 1 / 2, "x")
         T6 = Tree_filled(T5, T4, 1 / 2, "y")
 
-        #manimisation de l'arbre
-        G6,Labels = manimise_tree(T6)
-        G = Graph(list(G6.nodes), list(G6.edges), layout="tree", root_vertex=T6.id, labels=Labels)
-        adjust_dot_size(G)
+        #génération des lignes
+        T6.lines(region)
 
-        #création et manimisation du schéma associé
-        L = T6.lines(region)
-        S = manimise_separation(L, region)
+        #création des éléments à animer
+        E, S = elements_in_order(T6, region = region)
 
-        #ajustement
-        G.move_to([4,0,0]).scale(1.5)
-        S.move_to([-3, 0, 0])
+        #réorganisation
+        E.scale(3).shift(3*RIGHT+UP)
+        S.update()
+
+        #ajout de labels sur l'axe
+        labels = S[0].get_axis_labels( Tex("x"), Text("y").scale(0.7))
 
         #animation
-        self.play(Create(G), Create(S), run_time=10)
+        self.play(Create(S[0]), Create(labels)) #création du repère
+        k = 1
+        for e in E :
+            anims = (GrowFromCenter(e),) #création d'un noeud
+            if isinstance(e, LabeledDot):
+                anims += (Create(S[k]),) #si le noeud est associé à une séparation, on crée en même temps la ligne correspondante
+                k+=1
+            self.play(*anims)
