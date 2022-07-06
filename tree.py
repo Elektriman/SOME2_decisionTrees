@@ -57,6 +57,8 @@ class Tree(ABC) :
         Tree.n_tot += 1
         self.depth = 0
         self.pos = (0,0)
+        self.scale = 1
+        self.xy_ratio = 1
         self.parent = None
         self.all_nodes.append(self)
 
@@ -70,6 +72,16 @@ class Tree(ABC) :
             noeud parent
         """
         self.parent = parent
+
+    def get_pos(self):
+        """
+        getter pour la position
+        Returns
+        -------
+        tupe
+            position du noeud
+        """
+        return (self.pos[0]*self.scale, self.pos[1]*self.scale)
 
     @staticmethod
     def update_params(self, depth=0):
@@ -147,7 +159,7 @@ class Tree_filled(Tree):
         [[x0,y0],[x1,y1]] la ligne de séparation associée au noeud
     """
     
-    def __init__(self, left:Tree, right:Tree, seuil:float, div=""):
+    def __init__(self, left:Tree, right:Tree, seuil:float, div="", scale=1, xy_ratio=1):
         super().__init__()
         self.l = left #également bottom
         self.r = right #également top
@@ -156,6 +168,8 @@ class Tree_filled(Tree):
         self.s = seuil
         self.div = div
         self.label = div + "<" + str(seuil)
+        self.scale=scale
+        self.xy_ratio=xy_ratio
         self.line = []
         self.update_params()
 
@@ -199,8 +213,12 @@ class Tree_filled(Tree):
         if self.depth == 0 :
             Tree.ROOT = self
 
-        self.l.pos = (self.pos[0] - 1/(1+self.depth), self.pos[1] - 0.5)
-        self.r.pos = (self.pos[0] + 1/(1+self.depth), self.pos[1] - 0.5)
+        self.l.pos = (self.pos[0] - self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
+        self.r.pos = (self.pos[0] + self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
+        self.l.xy_ratio = self.xy_ratio
+        self.r.xy_ratio = self.xy_ratio
+        self.l.scale = self.scale
+        self.r.scale = self.scale
         self.l.update_params(depth + 1)
         self.r.update_params(depth + 1)
     
@@ -218,7 +236,7 @@ class Tree_filled(Tree):
         if self.isleaf():
             #si c'est une feuille
             #on coupe en deux selon le seuil et l'axe
-            
+
             if self.div == "x":
                 self.line = [[self.s, region[0][1]], [self.s ,region[1][1]]]
             elif self.div == "y" :
@@ -255,11 +273,8 @@ class Tree_filled(Tree):
 
 if __name__=="__main__":
     #création d'un arbre test
-    region =  [[0,0],[1,1]]
-    T1 = Tree_filled(Tree_empty(),Tree_empty(),3/4,"x")
-    T2 = Tree_filled(Tree_empty(),Tree_empty(),1/4,"y")
-    T3 = Tree_filled(Tree_empty(),T1,3/4,"y")
-    T4 = Tree_filled(Tree_empty(),T2,1/2,"x")
-    T5 = Tree_filled(Tree_empty(),T3,1/4,"x")
-    T6 = Tree_filled(T4,T5,1/2,"y")
+    region =  [[30,70],[0,12]]
+
+
+
 

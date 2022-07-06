@@ -22,26 +22,26 @@ class LabeledNode(Mobject):
 
     def __init__(self, text, **kwargs):
         super().__init__(**kwargs)
+        self.fill_rgbas = [0, 0, 0, 0]
+        self.stroke_rgbas = [0, 0, 0, 0]
+        self.background_stroke_rgbas = [0, 0, 0, 0]
 
         #ajout de la partie textuelle aux sous-mobjects
         self.submobjects.append(text)
 
         #création de la forme du noeud
-        shape = RoundedRectangle(corner_radius=min(text.height, text.width)*0.2,
-                                                 height=text.height*1.3,
-                                                 width=text.width*1.3,
-                                                 fill_color=WHITE,
-                                                 fill_opacity=1.,
-                                                 z_index=text.z_index - 1)
+        shape = SurroundingRectangle(self.submobjects[0],
+                                     corner_radius=0.07,
+                                     fill_color=BLUE,
+                                     color=BLUE,
+                                     fill_opacity=1.,
+                                     z_index=text.z_index - 1)
 
         #ajout de la forme aux sous-mobjects
         self.submobjects.append(shape)
 
         #ajout d'un updater pour que la forme suive le texte (mvt + taille)
         def shape_updater(shape):
-            #mise à jour de la taille
-            shape.set(height = self.submobjects[0].height*1.2)
-            shape.set(width = self.submobjects[0].width*1.2)
             #mise à jour de la position
             shape.match_coord(self.submobjects[0], 0)
             shape.match_coord(self.submobjects[0], 1)

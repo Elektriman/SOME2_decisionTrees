@@ -57,13 +57,13 @@ def elements_in_order(T:Tree, region=None)->tuple :
         L = tuple() #liste des lignes de séparations
 
     #tri des noeuds du moins profond au plus profond, puis de gauche à droite
-    Nodes = sorted(T.all_nodes, key = lambda t:(t.depth, t.pos[0]))
+    Nodes = sorted(T.all_nodes, key = lambda t:(t.depth, t.get_pos()[0]))
 
     for n in Nodes :
 
         #ajout du noeud
         if isinstance(n, Tree_filled): #cas où le noeud contient de l'écriture
-            nText = Text(n.label, color=BLACK, font_size=15).move_to([n.pos[0], n.pos[1], 0])
+            nText = Text(n.label, color=BLACK, font_size=15).move_to([n.get_pos()[0], n.get_pos()[1], 0])
             G += (LabeledNode(nText),)
 
             # le noeud décrit une séparation des données donc on ajoute la ligne de séparation correspondante dans la bonne liste
@@ -73,14 +73,14 @@ def elements_in_order(T:Tree, region=None)->tuple :
                 L += (sep_line,)
 
         else: #cas où le noeud est une feuille
-            G += (Dot(point=[n.pos[0], n.pos[1], 0]).set(width=0.15),)
+            G += (Dot(point=[n.get_pos()[0], n.get_pos()[1], 0]).set(width=0.15, color=BLUE),)
 
         # ajout de la ligne qui va du parent à l'actuel noeud
         if n.parent:
             if isinstance(n, Tree_filled):
-                G = G[:-1] + (Line(start=[n.parent.pos[0], n.parent.pos[1], 0], end=G[-1].get_critical_point(UP), z_index=-1),) + (G[-1],)
+                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0], end=G[-1].get_critical_point(UP), z_index=-1),) + (G[-1],)
             else:
-                G = G[:-1] + (Line(start=[n.parent.pos[0], n.parent.pos[1], 0], end=[n.pos[0], n.pos[1], 0], z_index=-1),) + (G[-1],)
+                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0], end=[n.get_pos()[0], n.get_pos()[1], 0], z_index=-1),) + (G[-1],)
 
     if region : #si on renvoie le schéma
         graph = Group(*G)
@@ -108,34 +108,36 @@ class Scene13(Scene):
         T3 = Tree_filled(T1, Tree_empty(), 3 / 4, "y")
         T4 = Tree_filled(Tree_empty(), T3, 1 / 4, "x")
         T5 = Tree_filled(Tree_empty(), T2, 1 / 2, "x")
-        T6 = Tree_filled(T5, T4, 1 / 2, "y")
+        T6 = Tree_filled(T5, T4, 1 / 2, "y", scale=1.5)
 
         #génération des lignes
         T6.lines(region)
 
-        #création des éléments à animer
-        E, S = elements_in_order(T6, region = region)
+        self.create_tree(T6, region)
 
-        #réorganisation
-        E.scale(2).shift(2*RIGHT+UP)
+    def create_tree(self, T, region=None):
+        # création des éléments à animer
+        E, S = elements_in_order(T, region=region)
+
+        # réorganisation
+        E.shift(2 * RIGHT + UP).scale(1.5)
         S.update()
 
-        #ajout de labels sur l'axe
-        labels = S[0].get_axis_labels( Tex("x"), Text("y").scale(0.7))
+        # ajout de labels sur l'axe
+        labels = S[0].get_axis_labels(Tex("x"), Text("y").scale(0.7))
 
-        #animation
-        self.play(Create(S[0]), Create(labels)) #création du repère
+        self.play(Create(S[0]), Create(labels))  # création du repère
         k = 1
-        for e in E :
+        for e in E:
             if isinstance(e, LabeledNode):
                 # si le noeud est associé à une séparation, on crée en même temps la ligne correspondante
-                anims = (Create(e),Create(S[k]),)
-                k+=1
+                anims = (Create(e), Create(S[k]),)
+                k += 1
             elif isinstance(e, Dot):
-                #si le noeud est une feuille, on effectue GrowFromCenter
+                # si le noeud est une feuille, on effectue GrowFromCenter
                 anims = (GrowFromCenter(e),)
-            else :
-                #si on trace une ligne entre deux noeuds, on utilise Create
+            else:
+                # si on trace une ligne entre deux noeuds, on utilise Create
                 anims = (Create(e),)
 
             self.play(AnimationGroup(*anims), run_time=0.5)
