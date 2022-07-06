@@ -199,8 +199,8 @@ class Tree_filled(Tree):
         if self.depth == 0 :
             Tree.ROOT = self
 
-        self.l.pos = (self.pos[0] - 0.5/(1+self.depth), self.pos[1] - 0.5)
-        self.r.pos = (self.pos[0] + 0.5/(1+self.depth), self.pos[1] - 0.5)
+        self.l.pos = (self.pos[0] - 1/(1+self.depth), self.pos[1] - 0.5)
+        self.r.pos = (self.pos[0] + 1/(1+self.depth), self.pos[1] - 0.5)
         self.l.update_params(depth + 1)
         self.r.update_params(depth + 1)
     

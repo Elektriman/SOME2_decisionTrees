@@ -8,9 +8,8 @@
 #                 |_|
 
 from manim import *
-import networkx as nx
 from tree import *
-import inspect
+from LabeledNode import LabeledNode
 
 #  ______                _   _
 # |  ____|              | | (_)
@@ -62,13 +61,10 @@ def elements_in_order(T:Tree, region=None)->tuple :
 
     for n in Nodes :
 
-        #ajout de la ligne qui va du parent à l'actuel noeud
-        if n.parent :
-            G += (Line(start = [n.parent.pos[0], n.parent.pos[1], 0], end = [n.pos[0], n.pos[1], 0], z_index=-1),)
-
         #ajout du noeud
         if isinstance(n, Tree_filled): #cas où le noeud contient de l'écriture
-            G += (LabeledDot(n.label, point=[n.pos[0], n.pos[1], 0]).set(width=0.45),)
+            nText = Text(n.label, color=BLACK, font_size=15).move_to([n.pos[0], n.pos[1], 0])
+            G += (LabeledNode(nText),)
 
             # le noeud décrit une séparation des données donc on ajoute la ligne de séparation correspondante dans la bonne liste
             if region :
@@ -78,6 +74,13 @@ def elements_in_order(T:Tree, region=None)->tuple :
 
         else: #cas où le noeud est une feuille
             G += (Dot(point=[n.pos[0], n.pos[1], 0]).set(width=0.15),)
+
+        # ajout de la ligne qui va du parent à l'actuel noeud
+        if n.parent:
+            if isinstance(n, Tree_filled):
+                G = G[:-1] + (Line(start=[n.parent.pos[0], n.parent.pos[1], 0], end=G[-1].get_critical_point(UP), z_index=-1),) + (G[-1],)
+            else:
+                G = G[:-1] + (Line(start=[n.parent.pos[0], n.parent.pos[1], 0], end=[n.pos[0], n.pos[1], 0], z_index=-1),) + (G[-1],)
 
     if region : #si on renvoie le schéma
         graph = Group(*G)
@@ -114,7 +117,7 @@ class Scene13(Scene):
         E, S = elements_in_order(T6, region = region)
 
         #réorganisation
-        E.scale(3).shift(3*RIGHT+UP)
+        E.scale(2).shift(2*RIGHT+UP)
         S.update()
 
         #ajout de labels sur l'axe
@@ -124,8 +127,15 @@ class Scene13(Scene):
         self.play(Create(S[0]), Create(labels)) #création du repère
         k = 1
         for e in E :
-            anims = (GrowFromCenter(e),) #création d'un noeud
-            if isinstance(e, LabeledDot):
-                anims += (Create(S[k]),) #si le noeud est associé à une séparation, on crée en même temps la ligne correspondante
+            if isinstance(e, LabeledNode):
+                # si le noeud est associé à une séparation, on crée en même temps la ligne correspondante
+                anims = (Create(e),Create(S[k]),)
                 k+=1
-            self.play(*anims)
+            elif isinstance(e, Dot):
+                #si le noeud est une feuille, on effectue GrowFromCenter
+                anims = (GrowFromCenter(e),)
+            else :
+                #si on trace une ligne entre deux noeuds, on utilise Create
+                anims = (Create(e),)
+
+            self.play(AnimationGroup(*anims), run_time=0.5)
