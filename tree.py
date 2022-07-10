@@ -46,7 +46,10 @@ class Tree(ABC) :
         [x,y] la position du noeud dans la représentation graphique
     parent : Tree
         le noeud parent, None si le noeud est la racine
-
+    scale : float
+        ajustement des distances entre les noeuds
+    xy_ratio : float
+        ratio qui permet d'avoir un arbre plus large (<1) ou plus haut (>1)
     """
     n_tot = 0
     all_nodes = []
@@ -57,9 +60,11 @@ class Tree(ABC) :
         Tree.n_tot += 1
         self.depth = 0
         self.pos = (0,0)
+        self.parent = None
+        # attributs de scaling pour l'affichage
         self.scale = 1
         self.xy_ratio = 1
-        self.parent = None
+        #ajout à la liste totale de tous les neouds
         self.all_nodes.append(self)
 
     def define_parent(self, parent):
@@ -149,8 +154,6 @@ class Tree_filled(Tree):
         branche de droite
     s : float
         seuil associé au noeud
-    pos : (float,float)
-        la position du noeud
     div : string
         indicateur de l'axe sur lequel faire la division ("x" ou "y")
     label : str
@@ -163,14 +166,18 @@ class Tree_filled(Tree):
         super().__init__()
         self.l = left #également bottom
         self.r = right #également top
+        #ajout du parent pour les deux enfants
         self.l.define_parent(self)
         self.r.define_parent(self)
+
         self.s = seuil
         self.div = div
         self.label = div + "<" + str(seuil)
+        self.line = []
+
+        #paramètres communs à tout l'arbre
         self.scale=scale
         self.xy_ratio=xy_ratio
-        self.line = []
         self.update_params()
 
     def __str__(self):
@@ -209,16 +216,28 @@ class Tree_filled(Tree):
         return self.l.returnLNR() + [(self.s, self.div)] + self.r.returnLNR()
 
     def update_params(self, depth=0):
+        """
+        met à jour les paramètres de l'arbre
+
+        Parameters
+        ----------
+        depth : int
+            la profondeur du noeud parent
+        """
+        #mise à jour de la profondeur
         self.depth = depth
+        #mise à jour du noeud racine
         if self.depth == 0 :
             Tree.ROOT = self
-
+        #mise à jour de la position des noeuds enfants
         self.l.pos = (self.pos[0] - self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
         self.r.pos = (self.pos[0] + self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
+        #transmission des valeurs de scaling pour l'affichage
         self.l.xy_ratio = self.xy_ratio
         self.r.xy_ratio = self.xy_ratio
         self.l.scale = self.scale
         self.r.scale = self.scale
+        #récursion sur les arbres enfants
         self.l.update_params(depth + 1)
         self.r.update_params(depth + 1)
     

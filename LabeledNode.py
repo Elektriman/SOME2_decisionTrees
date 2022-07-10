@@ -46,8 +46,10 @@ class LabeledNode(Mobject):
         #mise à jour de la position
         self.submobjects[1].match_coord(self.submobjects[0], 0)
         self.submobjects[1].match_coord(self.submobjects[0], 1)
+        #mise à jour de la taille
         self.submobjects[1].match_height(SurroundingRectangle(self.submobjects[0],corner_radius=0.07))
         self.submobjects[1].match_width(SurroundingRectangle(self.submobjects[0],corner_radius=0.07))
+        #mise à jour de la profondeur
         self.submobjects[1].set(z_index = self.submobjects[0].z_index -1)
 
     @override_animation(Create)
