@@ -11,6 +11,9 @@ from manim import *
 from tree import *
 from LabeledNode import LabeledNode
 
+#configuration de la couleur d'arrière-plan
+config.background_color = rgb_to_color(3*(36/256,))
+
 #  ______                _   _
 # |  ____|              | | (_)
 # | |__ _   _ _ __   ___| |_ _  ___  _ __  ___
@@ -69,18 +72,24 @@ def elements_in_order(T:Tree, region=None)->tuple :
             # le noeud décrit une séparation des données donc on ajoute la ligne de séparation correspondante dans la bonne liste
             if region :
                 #on utilise coord_to_point pour avoir la position relative au repère créé plus tôt.
-                sep_line = Line(start=axes.coords_to_point(n.line[0][0], n.line[0][1]), end=axes.coords_to_point(n.line[1][0], n.line[1][1]))
+                sep_line = Line(start=axes.coords_to_point(n.line[0][0], n.line[0][1]), end=axes.coords_to_point(n.line[1][0], n.line[1][1]), color=YELLOW)
                 L += (sep_line,)
 
         else: #cas où le noeud est une feuille
-            G += (Dot(point=[n.get_pos()[0], n.get_pos()[1], 0]).set(width=0.15, color=BLUE),)
+            G += (Dot(point=[n.get_pos()[0], n.get_pos()[1], 0]).set(width=0.15, color=WHITE),)
 
         # ajout de la ligne qui va du parent à l'actuel noeud
         if n.parent:
             if isinstance(n, Tree_filled):
-                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0], end=G[-1].get_critical_point(UP), z_index=-1),) + (G[-1],)
+                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0],
+                                   end=G[-1].get_critical_point(UP),
+                                   z_index=-1,
+                                   color=LIGHT_GRAY),) + (G[-1],)
             else:
-                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0], end=[n.get_pos()[0], n.get_pos()[1], 0], z_index=-1),) + (G[-1],)
+                G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0],
+                                   end=[n.get_pos()[0], n.get_pos()[1], 0],
+                                   z_index=-1,
+                                   color=LIGHT_GRAY),) + (G[-1],)
 
     if region : #si on renvoie le schéma
         graph = Group(*G)
