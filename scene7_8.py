@@ -59,10 +59,12 @@ def elements_in_order(T:Tree, region=None)->tuple :
             tips=False
         )
 
+        #édition manuelle de l'axe y
         y_pos = [0.3, 0.7]
         y_ticks = ["No", "Yes"]
         y_dict = dict(zip(y_pos, y_ticks))
         axes.add_coordinates(None, y_dict)
+
         L = tuple() #liste des lignes de séparations
 
     #tri des noeuds du moins profond au plus profond, puis de gauche à droite
@@ -105,10 +107,29 @@ def elements_in_order(T:Tree, region=None)->tuple :
         separation.add_updater(lambda m:m.match_height(graph).next_to(graph, LEFT))
         return graph, separation
     else :
-
         return Group(*G)
 
 def path_along_line(line:Line, start_point, end_point, exit_node, entry_node):
+    """
+    renvoie un chemin composé de deux courbes de bézier pour aller d'un noeud à un autre
+    Parameters
+    ----------
+    line : Line
+        la ligne à suivre
+    start_point : Mobject
+        le point de départ du chemin
+    end_point : Mobject
+        le point d'arrivée
+    exit_node : Mobject
+        le noeud de départ
+    entry_node : Mobject
+        le noeud d'arrivée
+
+    Returns
+    -------
+    VMobject
+        Le chemin sous la forme d'un VMobject
+    """
     P = VMobject()
     P.points = np.array([start_point.get_center()])
     P.add_cubic_bezier_curve_to(start_point.get_center(), exit_node.get_center(), line.get_center())
@@ -116,13 +137,32 @@ def path_along_line(line:Line, start_point, end_point, exit_node, entry_node):
     return P
 
 def add_yes_no(line, text, font_size=15):
+    """
+    génère un texte "yes" ou "no" à coté d'une ligne du graphe
+    Parameters
+    ----------
+    line : Line
+        la ligne à côté de laquelle afficher le texte
+    text : str
+        "yes" ou "no" pour définir si le texte sera à droite ou à gauche, et si le texte sera yes ou no
+    font_size : int
+        la taille de la police
+
+    Returns
+    -------
+    Text Mobject
+        le Text Mobject prêt à être affiché
+    """
+    #updater de position
     def x_updater(m, line, direction):
         m.move_to(line).shift(0.5 * direction)
 
     if text=="yes" :
+        #une ligne yes va vers la droite
         txt = Text(text, color=WHITE, font_size=font_size).move_to(line).shift(0.5 * RIGHT)
         txt.add_updater(lambda m: x_updater(m, line, RIGHT))
     else :
+        #une ligne no va vers la gauche
         txt = Text("no", color=WHITE, font_size=font_size).move_to(line).shift(0.5 * LEFT)
         txt.add_updater(lambda m:x_updater(m, line, LEFT))
 
@@ -141,8 +181,6 @@ class Scene7_8(MovingCameraScene):
         self.scene8(E, T, YN)
 
     def scene7(self):
-        self.camera.frame.save_state()
-
         # graphes
 
         vertices1 = [i for i in range(6)]
@@ -185,7 +223,8 @@ class Scene7_8(MovingCameraScene):
         # retirer les cycles
         self.play(G1.animate.remove_edges((2, 3), (3, 5)))
         self.play(self.camera.frame.animate.scale(1.1).shift(DOWN * 0.1),
-                  G1.animate.add_edges((2, 6), (5, 7), positions={6: [-2.5, -1.9, 0], 7: [-0.5, -3.5, 0]},
+                  G1.animate.add_edges((2, 6), (5, 7),
+                                       positions={6: [-2.5, -1.9, 0], 7: [-0.5, -3.5, 0]},
                                        vertex_config={6: dot_conf, 7: dot_conf}))
         self.wait(2)
 
@@ -198,6 +237,8 @@ class Scene7_8(MovingCameraScene):
         self.wait(2)
 
         # transformation en arbre CART
+
+        #réorganisation des éléments de G1 pour correspondre à la disposition dans le Groupe E
         Graph_group = Group(G1.submobjects[0], G1.submobjects[8], G1.submobjects[4], G1.submobjects[5],
                             G1.submobjects[1], G1.submobjects[7], G1.submobjects[3], G1.submobjects[6],
                             G1.submobjects[2])
@@ -206,42 +247,67 @@ class Scene7_8(MovingCameraScene):
         E.scale_to_fit_width(G1.width * 1.5)
         E.move_to(G1)
 
+        #transformation du graphe
         self.play(Transform(Graph_group, E))
+
+        #suppression de l'ancien
         self.remove(Graph_group)
         self.add(E)
+
+        #ajout des textes yes et no sur les traits
         txt_yes = add_yes_no(E[3], "yes", font_size=1.5*E[0][0].font_size//2)
         txt_no = add_yes_no(E[1], "no", font_size=1.5*E[0][0].font_size//2)
         txt_yes2 = add_yes_no(E[7], "yes", font_size=1.5*E[0][0].font_size//2)
         txt_no2 = add_yes_no(E[5], "no", font_size=1.5*E[0][0].font_size//2)
         YN = Group(txt_yes, txt_no, txt_yes2, txt_no2)
+
+        #écriture des noeuds et des textes des arêtes
         self.play(Write(E[0][0]), Write(E[4][0]), Write(txt_yes), Write(txt_no), Write(txt_yes2), Write(txt_no2))
         self.wait(2)
 
+        #fin de la scène7, passage des éléments à la scène 8
         return E, T2, YN
 
     def scene8(self, E, tree, YN):
 
         #point qui se balade
+
+        #ajout de l'icone de fille
         Girl = ImageMobject("img/girl.png", z_index=2).move_to(E[0]).shift(1.3*LEFT*E[0].width/2).scale_to_fit_height(E[0].height*1.5)
         self.play(FadeIn(Girl))
+
+        #parcour du chemin vers le noeud "tutoring ?"
         K = Dot(z_index=2).next_to(E[4], LEFT)
         self.play(MoveAlongPath(Girl, path_along_line(E[3], Girl, K, E[0], E[4])), run_time=4)
         self.wait(3)
+
+        #parcour du chemin vers la feuille droite
         L = Dot(z_index=2).move_to(E[8])
         self.play(MoveAlongPath(Girl, path_along_line(E[7], Girl, L, E[4], E[8])), run_time=3)
         self.wait(3)
 
+        #suppression de la figure complète
         self.play(FadeOut(Girl), FadeOut(E), FadeOut(YN))
+
+        #recadrage
         self.play(self.camera.frame.animate.shift(1.7*LEFT+1.2*DOWN))
 
+        #recréation de l'arbre avec le schéma à côté
         region = [[0, 0], [3, 1]]
         tree.lines(region)
         self.create_tree(tree, region)
 
-    """
-    fonction create tree
-    """
     def create_tree(self, T, region=None):
+        """
+        version modifiée de create_tree pour correspondre à la scène 8 (comparé à la scène 13)
+
+        Parameters
+        ----------
+        T : Tree
+            l'arbre à construire
+        region : tuple
+            [[x0, y0],[x1, y1]] la région correspondant au schéma de séparation associé à l'arbre
+        """
         if region :
             # création des éléments à animer
             E, S = elements_in_order(T, region=region)
@@ -253,42 +319,52 @@ class Scene7_8(MovingCameraScene):
                 direction=LEFT,
                 buff=0.5,
             )
+            #décalage de l'axe des ordonnées car on a besoin d'avoir de la place au-dessus de x=0
             S[0].get_axes()[1].shift(LEFT*0.38)
+            #modification de l'axe x pour afficher le tick et le label en 0
             S[0].get_axes()[0].become(NumberLine(x_range=[-0.5, 3.5, 1],
                                                  length=7,
                                                  color=GREEN,
                                                  include_numbers=True,
                                                  numbers_to_include=[0,1,2,3]).move_to(S[0].get_axes()[0]).match_width(S[0].get_axes()[0]))
-            self.play(Create(S[0]), Create(x_label), Create(y_label))
+
             # création du repère
+            self.play(Create(S[0]), Create(x_label), Create(y_label))
             self.wait(1)
+            k = 1
+
         else :
             E = elements_in_order(T)
-
-        if region :
-            k = 1
 
         for e in E:
             if isinstance(e, LabeledNode):
                 # si le noeud est associé à une séparation, on crée en même temps la ligne correspondante
                 if region :
-                    self.play(Create(S[k]))
+                    self.play(Create(S[k])) #création de la ligne
+
+                    #direction dans laquelle bouger la ligne de séparation
                     if S[k].width > S[k].height :
                         direction = UP
                     else :
                         direction = LEFT
 
+                    #animation de la ligne de séparation qui fait un aller-retour
                     self.play(S[k].animate.shift(direction), rate_func=wiggle, run_time=3)
+                    #la séparation s'arrête, on crée le noeud correspondant à la séparation
                     self.play(Create(e))
                     k += 1
                 else :
+                    #on crée le neoud
                     self.play(Create(e))
             elif isinstance(e, Dot):
                 # si le noeud est une feuille, on effectue GrowFromCenter
                 self.play(GrowFromCenter(e))
             else:
                 # si on trace une ligne entre deux noeuds, on utilise Create
+                #on vérifie si la ligne va vers la gauche ou la droite
                 if e.start[0] < e.end[0] :
+                    #si elle va vers la droite, on lui annote le texte "yes"
                     self.play(Create(e), Write(add_yes_no(e, "yes")))
                 else :
+                    #dans le cas contraire, on lui met le texte "no"
                     self.play(Create(e), Write(add_yes_no(e, "no")))
