@@ -10,6 +10,9 @@
 from manim import *
 import manimpango
 
+#configuration de la couleur d'arrière-plan
+config.background_color = rgb_to_color(3*(36/256,))
+
 #  __  __       _
 # |  \/  |     (_)
 # | \  / | __ _ _ _ __    ___  ___ ___ _ __   ___
@@ -21,12 +24,12 @@ class Scene5(MovingCameraScene):
     def construct(self):
 
         #construction de la figure initiale
-        Txt = Text("M", color=RED, z_index=0).move_to([0,0,0]) #lettre M
+        Txt = Text("M", color=BLACK, z_index=0).move_to([0,0,0]) #lettre M
         #rectangle
         R = SurroundingRectangle(Txt,
                                  corner_radius=0.07,
                                  fill_color=WHITE,
-                                 color=LIGHT_GRAY,
+                                 color=WHITE,
                                  fill_opacity=1.,
                                  z_index=-1)
         #flèche
@@ -71,13 +74,34 @@ class Scene5(MovingCameraScene):
         start_handle = R.get_right()
         end_handle = 3*RIGHT
         paths2 = [CubicBezier(start_anchor, start_handle, end_handle, p.get_center()) for p in P2]
+
         #sortie des carrés selon une courbe de bézier
         self.play(AnimationGroup(*tuple(MoveAlongPath(P[i], paths2[i]) for i in range(len(P))), group=Points, lag_ratio=0.3))
         self.wait(2)
 
-        #changement de la police d'écriture de la boite
-        with register_font("Labajo.ttf"):
-            new_txt = Text("M", font="Labajo", color=RED)
-            self.play(FadeOut(Txt, run_time=2))
-            self.play(Write(new_txt, rate_function="rush_into", run_time=2))
+        # changement de la police d'écriture de la boite
+        with register_font("Montserrat.ttf"):
+            Montserrat_txt = Text("M", font="Montserrat", weight="BOLD", color=BLACK)
+            self.play(Txt.animate.become(Montserrat_txt))
+        self.wait(2)
+
+        # changement de la police d'écriture de la boite
+        with register_font("Courier_New.ttf"):
+            Courier_txt = Text("M", font="Courier New", color=BLACK)
+            self.play(Txt.animate.become(Courier_txt))
+        self.wait(2)
+
+        # changement de la police d'écriture de la boite
+        with register_font("Arjona.ttf"):
+            Arjona_txt = Text("m", font="Arjona", color=BLACK)
+            self.play(Txt.animate.become(Arjona_txt))
+        self.wait(2)
+
+        # changement de la police d'écriture de la boite
+        with register_font("Didot Regular.ttf"):
+            Didot_txt = Text("M", font="Didot", color=BLACK)
+            self.play(Txt.animate.become(Didot_txt))
+        self.wait(2)
+
+        self.play(FadeOut(Txt), run_time=2)
         self.wait(2)
