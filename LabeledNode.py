@@ -32,22 +32,23 @@ class LabeledNode(Mobject):
         #création de la forme du noeud
         shape = SurroundingRectangle(self.submobjects[0],
                                      corner_radius=0.07,
-                                     fill_color=BLUE,
-                                     color=BLUE,
+                                     fill_color=WHITE,
+                                     color=WHITE,
                                      fill_opacity=1.,
                                      z_index=text.z_index - 1)
 
         #ajout de la forme aux sous-mobjects
         self.submobjects.append(shape)
+        self.shape_updater()
 
-        #ajout d'un updater pour que la forme suive le texte (mvt + taille)
-        def shape_updater(shape):
-            #mise à jour de la position
-            shape.match_coord(self.submobjects[0], 0)
-            shape.match_coord(self.submobjects[0], 1)
-
-        self.submobjects[1].add_updater(shape_updater)
-        self.submobjects[1].update()
+    #ajout d'un updater pour que la forme suive le texte (mvt + taille)
+    def shape_updater(self):
+        #mise à jour de la position
+        self.submobjects[1].match_coord(self.submobjects[0], 0)
+        self.submobjects[1].match_coord(self.submobjects[0], 1)
+        self.submobjects[1].match_height(SurroundingRectangle(self.submobjects[0],corner_radius=0.07))
+        self.submobjects[1].match_width(SurroundingRectangle(self.submobjects[0],corner_radius=0.07))
+        self.submobjects[1].set(z_index = self.submobjects[0].z_index -1)
 
     @override_animation(Create)
     def custom_create(self):
