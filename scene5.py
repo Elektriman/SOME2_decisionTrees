@@ -103,5 +103,6 @@ class Scene5(MovingCameraScene):
             self.play(Txt.animate.become(Didot_txt))
         self.wait(2)
 
+        #on retire le contenu de la boîte
         self.play(FadeOut(Txt), run_time=2)
         self.wait(2)
