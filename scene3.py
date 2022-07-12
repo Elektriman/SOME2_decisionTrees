@@ -73,15 +73,15 @@ class Scene3(MovingCameraScene):
         self.wait(2)
 
         #déplacement sur les paramètres liés à la situation familiale
-        self.play(x_coord.animate.set_value(x_coord.get_value()+3.2), width.animate.set_value(4))
+        self.play(x_coord.animate.increment_value(3.2), width.animate.set_value(4))
         self.wait(2)
 
         #déplacement sur la colonne absences
-        self.play(x_coord.animate.set_value(x_coord.get_value() + 2.45), width.animate.set_value(0.85))
+        self.play(x_coord.animate.increment_value(2.45), width.animate.set_value(0.85))
         self.wait(2)
 
         #déplacement sur les colonnes "moyenne" et "Passage ?"
-        self.play(x_coord.animate.set_value(x_coord.get_value() + 2.25), width.animate.set_value(1.9))
+        self.play(x_coord.animate.increment_value(2.25), width.animate.set_value(1.9))
         self.wait(4)
 
         #déplacement sur la ligne Alice
@@ -92,7 +92,7 @@ class Scene3(MovingCameraScene):
         self.wait(2)
 
         #déplacement sur toutes les données hors index et en-tête
-        self.play(x_coord.animate.set_value(x_coord.get_value()+0.35),
+        self.play(x_coord.animate.increment_value(0.35),
                   y_coord.animate.set_value(Rows[1].get_y()-4.5*ROW_HEIGHT),
                   height.animate.set_value(ROW_HEIGHT*10),
                   width.animate.set_value(ROW_WIDTH-0.7))
@@ -100,4 +100,43 @@ class Scene3(MovingCameraScene):
 
         #on retire le rectangle, puis le tableau
         self.play(Uncreate(Focus))
+        self.play(FadeOut(G))
+
+        #ici est l'animation de la régression linéaire
+        self.wait(3)
+
+        #retour au tableau de données
+        self.play(FadeIn(G))
+        self.wait(1)
+
+        #séparation des trois dernières lignes
+        self.play(G[:8].animate.shift(0.5*UP), G[8:].animate.shift(0.5*DOWN))
+        self.wait(2)
+
+        # encadrement de la partie haute
+        width.set_value(ROW_WIDTH)
+        height.set_value(head.height + 7 * ROW_HEIGHT)
+        x_coord.increment_value(-0.35)
+        y_coord.set_value(-0.66)
+
+        #recréation du Focus
+        Focus = always_redraw(lambda: RoundedRectangle(width=width.get_value(),
+                                                       height=height.get_value(),
+                                                       corner_radius=0.05,
+                                                       color=RED,
+                                                       stroke_width=2).move_to([x_coord.get_value(), y_coord.get_value(), 0]))
+
+        self.play(Create(Focus))
+        self.wait(2)
+
+        #déplacement sur la partie basse
+        self.play(y_coord.animate.increment_value(-1 - height.get_value()/2 - 1.5 * ROW_HEIGHT),
+                  height.animate.set_value(3*ROW_HEIGHT))
+        self.wait(2)
+
+        #on enlève le Focus
+        self.play(Uncreate(Focus))
+        self.wait(1)
+
+        #fin de la scène
         self.play(FadeOut(G))
