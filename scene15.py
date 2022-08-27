@@ -11,7 +11,7 @@ from manim import *
 from tree import *
 from LabeledNode import LabeledNode
 
-#configuration de la couleur d'arrière-plan
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _
@@ -158,114 +158,6 @@ def remake_leaf(old_leaf: Mobject, *text: str) -> Mobject:
         .move_to(old_leaf)
     # copy font size and position
 
-def treeF():
-    # create tree
-    T1 = Tree_filled(Tree_empty(), Tree_empty(), 16.5, "x")
-    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
-    T3 = Tree_filled(T1, T2, 0, "y")
-    T4 = Tree_filled(Tree_empty(), Tree_empty(), 2.5, "y")
-    T5 = Tree_filled(T3, T4, 0, "y", scale=(2.5,2.5), xy_ratio=1)
-
-    G = elements_in_order(T5, label_leaves=True)
-
-    # edit the nodes
-    G0 = remake_node(G[0], "Ever failed", "a class ?", color=BLUE_E)
-    G2 = remake_node(G[2], "Extra support ?", color=BLUE_D)
-    G4 = remake_node(G[4], "Study time", ">2                .5h/week ?", color=BLUE_D)
-    G6 = remake_node(G[6], "Age>16.5 ?")
-    G8 = remake_node(G[8], "Good health ?")
-    L10 = remake_leaf(G[10], "FAIL", "(      100%)")
-    L12 = remake_leaf(G[12], "PASS", "(    67%)")
-    L14 = remake_leaf(G[14], "FAIL", "(    77%)")
-    L16 = remake_leaf(G[16], "PASS", "(    56%)")
-    L18 = remake_leaf(G[18], "FAIL", "(    80%)")
-    L20 = remake_leaf(G[20], "PASS", "(    56%)")
-
-    remake = [G0, G2, G4, G6, G8, L10, L12, L14, L16, L18, L20]
-    remade = [g for g in G]
-
-    for i in range(len(remake)):
-        remade[2 * i] = remake[i]
-
-    F = Group(*remade)
-
-    # enlarge upper nodes
-    F[0][0].scale(1.4)
-    F[0][1].scale(1.4)
-    F[2][0].scale(1.2)
-    F[2][1].scale(1.2)
-    F[4][0].scale(1.2)
-    F[4][1].scale(1.2)
-
-    return F
-
-
-def treeK():
-    Tree.reset()
-    # create the tree
-    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
-    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0)
-    T3 = Tree_filled(T1, Tree_empty(), 0)
-    T4 = Tree_filled(T2, Tree_empty(), 0)
-    T5 = Tree_filled(T3, Tree_empty(), 0)
-    T6 = Tree_filled(T4, Tree_empty(), 0)
-    T7 = Tree_filled(T5, T6, 0, scale=(2,2), xy_ratio=1)
-
-    G = elements_in_order(T7, label_leaves=True)
-
-    # edit the nodes
-    G0 = remake_node(G[0], "Ever failed", "a class ?", color=BLUE_E)
-    G2 = remake_node(G[2], "More than 10", "absences ?", color=BLUE_D)
-    G4 = remake_node(G[4], "Parents with", "hi                gh education ?", color=BLUE_D)
-    G6 = remake_node(G[6], "Extra support ?", color=BLUE_C)
-    G10 = remake_node(G[10], "Ever failed", "a class ?", color=BLUE_C)
-    G14 = remake_node(G[14], "Extra support ?", color=BLUE_B)
-    G18 = remake_node(G[18], "Ever failed", "a class ?", color=BLUE_B)
-    L8 = remake_leaf(G[8], "FAIL")
-    L12 = remake_leaf(G[12], "PASS")
-    L16 = remake_leaf(G[16], "FAIL")
-    L20 = remake_leaf(G[20], "FAIL")
-    L22 = remake_leaf(G[22], "FAIL")
-    L24 = remake_leaf(G[24], "FAIL")
-    L26 = remake_leaf(G[26], "FAIL")
-    L28 = remake_leaf(G[28], "FAIL")
-
-    remake = [G0, G2, G4, G6, L8, G10, L12, G14, L16, G18, L20, L22, L24, L26, L28]
-    remade = [g for g in G]
-
-    for i in range(len(remake)):
-        remade[2 * i] = remake[i]
-
-    K = Group(*remade)
-
-    return K
-
-def treeQ():
-    Tree.reset()
-    # create tree
-    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
-    T2 = Tree_filled(T1, Tree_empty(), 0, scale=(2,2), xy_ratio=1)
-
-    G = elements_in_order(T2, label_leaves=True)
-
-    # edit nodes
-    G0 = remake_node(G[0], "Failed a class", "at l                east twice ?", color=BLUE_E)
-    G2 = remake_node(G[2], "Extra support ?", color=BLUE_D)
-    L4 = remake_leaf(G[4], "FAIL")
-    L6 = remake_leaf(G[6], "PASS")
-    L8 = remake_leaf(G[8], "FAIL")
-
-
-    remake = [G0, G2, L4, L6, L8]
-    remade = [g for g in G]
-
-    for i in range(len(remake)):
-        remade[2 * i] = remake[i]
-
-    Q = Group(*remade)
-
-    return Q
-
 def change_tree(Tree1: Group, Tree2: Group, identical: list[int]) -> list[Animation]:
     """
     changes one tree into another by trying to edit as little as possible
@@ -307,6 +199,121 @@ def change_tree(Tree1: Group, Tree2: Group, identical: list[int]) -> list[Animat
             Anims.append(FadeIn(Tree2[i]))
 
     return Anims
+
+#      _       __ _       _ _   _
+#     | |     / _(_)     (_) | (_)
+#   __| | ___| |_ _ _ __  _| |_ _  ___  _ __  ___
+#  / _` |/ _ \  _| | '_ \| | __| |/ _ \| '_ \/ __|
+# | (_| |  __/ | | | | | | | |_| | (_) | | | \__ \
+#  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+def treeF() -> Group :
+    # create tree
+    T1 = Tree_filled(Tree_empty(), Tree_empty(), 16.5, "x")
+    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
+    T3 = Tree_filled(T1, T2, 0, "y")
+    T4 = Tree_filled(Tree_empty(), Tree_empty(), 2.5, "y")
+    T5 = Tree_filled(T3, T4, 0, "y", scale=(2.5,2.5), xy_ratio=1)
+
+    G = elements_in_order(T5, label_leaves=True)
+
+    # edit the nodes
+    G0 = remake_node(G[0], "Ever failed", "a class ?", color=BLUE_E)
+    G2 = remake_node(G[2], "Extra support ?", color=BLUE_D)
+    G4 = remake_node(G[4], "Study time", ">2                .5h/week ?", color=BLUE_D)
+    G6 = remake_node(G[6], "Age>16.5 ?")
+    G8 = remake_node(G[8], "Good health ?")
+    L10 = remake_leaf(G[10], "FAIL", "(      100%)")
+    L12 = remake_leaf(G[12], "PASS", "(    67%)")
+    L14 = remake_leaf(G[14], "FAIL", "(    77%)")
+    L16 = remake_leaf(G[16], "PASS", "(    56%)")
+    L18 = remake_leaf(G[18], "FAIL", "(    80%)")
+    L20 = remake_leaf(G[20], "PASS", "(    56%)")
+
+    remake = [G0, G2, G4, G6, G8, L10, L12, L14, L16, L18, L20]
+    remade = [g for g in G]
+
+    for i in range(len(remake)):
+        remade[2 * i] = remake[i]
+
+    F = Group(*remade)
+
+    # enlarge upper nodes
+    F[0][0].scale(1.4)
+    F[0][1].scale(1.4)
+    F[2][0].scale(1.2)
+    F[2][1].scale(1.2)
+    F[4][0].scale(1.2)
+    F[4][1].scale(1.2)
+
+    return F
+
+
+def treeK() -> Group :
+    Tree.reset()
+    # create the tree
+    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
+    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0)
+    T3 = Tree_filled(T1, Tree_empty(), 0)
+    T4 = Tree_filled(T2, Tree_empty(), 0)
+    T5 = Tree_filled(T3, Tree_empty(), 0)
+    T6 = Tree_filled(T4, Tree_empty(), 0)
+    T7 = Tree_filled(T5, T6, 0, scale=(2,2), xy_ratio=1)
+
+    G = elements_in_order(T7, label_leaves=True)
+
+    # edit the nodes
+    G0 = remake_node(G[0], "Ever failed", "a class ?", color=BLUE_E)
+    G2 = remake_node(G[2], "More than 10", "absences ?", color=BLUE_D)
+    G4 = remake_node(G[4], "Parents with", "hi                gh education ?", color=BLUE_D)
+    G6 = remake_node(G[6], "Extra support ?", color=BLUE_C)
+    G10 = remake_node(G[10], "Ever failed", "a class ?", color=BLUE_C)
+    G14 = remake_node(G[14], "Extra support ?", color=BLUE_B)
+    G18 = remake_node(G[18], "Ever failed", "a class ?", color=BLUE_B)
+    L8 = remake_leaf(G[8], "FAIL")
+    L12 = remake_leaf(G[12], "PASS")
+    L16 = remake_leaf(G[16], "FAIL")
+    L20 = remake_leaf(G[20], "FAIL")
+    L22 = remake_leaf(G[22], "FAIL")
+    L24 = remake_leaf(G[24], "FAIL")
+    L26 = remake_leaf(G[26], "FAIL")
+    L28 = remake_leaf(G[28], "FAIL")
+
+    remake = [G0, G2, G4, G6, L8, G10, L12, G14, L16, G18, L20, L22, L24, L26, L28]
+    remade = [g for g in G]
+
+    for i in range(len(remake)):
+        remade[2 * i] = remake[i]
+
+    K = Group(*remade)
+
+    return K
+
+def treeQ() -> Group :
+    Tree.reset()
+    # create tree
+    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
+    T2 = Tree_filled(T1, Tree_empty(), 0, scale=(2,2), xy_ratio=1)
+
+    G = elements_in_order(T2, label_leaves=True)
+
+    # edit nodes
+    G0 = remake_node(G[0], "Failed a class", "at l                east twice ?", color=BLUE_E)
+    G2 = remake_node(G[2], "Extra support ?", color=BLUE_D)
+    L4 = remake_leaf(G[4], "FAIL")
+    L6 = remake_leaf(G[6], "PASS")
+    L8 = remake_leaf(G[8], "FAIL")
+
+
+    remake = [G0, G2, L4, L6, L8]
+    remade = [g for g in G]
+
+    for i in range(len(remake)):
+        remade[2 * i] = remake[i]
+
+    Q = Group(*remade)
+
+    return Q
 
 
 #  __  __       _

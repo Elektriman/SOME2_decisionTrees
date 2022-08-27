@@ -9,6 +9,7 @@
 
 from manim import *
 
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  __  __       _
@@ -19,6 +20,9 @@ config.background_color = rgb_to_color(3*(36/256,))
 # |_|  |_|\__,_|_|_| |_| |___/\___\___|_| |_|\___|
 
 class Compound(MovingCameraScene):
+    """
+    this scene is used to create multiple small bits of animation used in the final project
+    """
     def construct(self):
 
         #animation 1

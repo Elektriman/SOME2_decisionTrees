@@ -10,9 +10,8 @@
 from manim import *
 from tree import *
 from LabeledNode import LabeledNode
-import numpy as np
 
-#configuration de la couleur d'arrière-plan
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _

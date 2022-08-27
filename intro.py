@@ -21,69 +21,37 @@ config.background_color = rgb_to_color(3*(36/256,))
 # | |  | |_| | | | | (__| |_| | (_) | | | \__ \
 # |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
 
-def elements_in_order(T:Tree, region=None, label_leaves=False)->tuple :
+def elements_in_order(T: Tree, label_leaves: bool = False) -> Group:
     """
-    renvoie les éléments à animer pour créer l'arbre dans l'ordre de création
+    turns a tree object into manim objects to display to show the same tree,
+    in the order they must be when contructed (aka top left to bottom right)
 
     Parameters
     ----------
     T : Tree
-        l'arbre à créer
-    region : tuple
-        [[x0, y0],[x1, y1]] la région correspondant au schéma de séparation associé à l'arbre
+        the tree to translate into manim mobjects
+    label_leaves : bool
+        wether or not to put labels on the leaves
 
     Returns
     -------
     graph : Group[Mobject]
-        le groupe de tous es Mobjects représentant l'arbre
-    separation : Group[Mobject], optional
-        (optionnel) le groupe de tous les mobjects représentant le schéma de séparation de l'arbre
+        the Group containing all the mobjects of the tree
     """
     G = tuple()
 
-    if region : #si une région est spécifiée on renvoie le schéma de séparation
-
-        #création des axes
-
-        # on divise les axes en 10 segmentations par défaut
-        dy = abs(region[0][1] - region[1][1]) / 10
-
-        axes = Axes(
-            x_range=[-0.5, 3.5, 1],
-            y_range=[0, 1, 0.5],
-            x_length=6,  # ajustement de la taille originale, peut être modifié ultérieurement
-            y_length = 6,
-            x_axis_config={"include_numbers": True, "numbers_to_include": [0, 1, 2, 3]},
-            axis_config={"color": WHITE, "exclude_origin_tick":False},
-            tips=False
-        )
-
-        #édition manuelle de l'axe y
-        y_pos = [0.3, 0.7]
-        y_ticks = ["No", "Yes"]
-        y_dict = dict(zip(y_pos, y_ticks))
-        axes.add_coordinates(None, y_dict)
-
-        L = tuple() #liste des lignes de séparations
-
-    #tri des noeuds du moins profond au plus profond, puis de gauche à droite
-    Nodes = sorted(T.all_nodes, key = lambda t:(t.depth, t.get_pos()[0]))
+    # sorting the nodes TL-BR
+    Nodes = sorted(T.all_nodes, key=lambda t: (t.depth, t.get_pos()[0]))
     k = 1
 
     for n in Nodes :
 
-        #ajout du noeud
-        if isinstance(n, Tree_filled): #cas où le noeud contient de l'écriture
+        #case where the node is either the root or a non-special node
+        if isinstance(n, Tree_filled):
             nText = Text(n.label, color=BLACK, font_size=15, z_index=1).move_to([n.get_pos()[0], n.get_pos()[1], 0])
             G += (LabeledNode(nText),)
 
-            # le noeud décrit une séparation des données donc on ajoute la ligne de séparation correspondante dans la bonne liste
-            if region :
-                #on utilise coord_to_point pour avoir la position relative au repère créé plus tôt.
-                sep_line = Line(start=axes.coords_to_point(n.line[0][0], n.line[0][1]), end=axes.coords_to_point(n.line[1][0], n.line[1][1]))
-                L += (sep_line,)
-
-        else: #cas où le noeud est une feuille
+        else: #case the the node is a leaf
             if label_leaves :
                 G += (Text(f"decision {k}", color=BLACK, font_size=10)\
                       .add_background_rectangle(color=WHITE, opacity=1, buff=0.1)\
@@ -92,81 +60,111 @@ def elements_in_order(T:Tree, region=None, label_leaves=False)->tuple :
             else :
                 G += (Dot(point=[n.get_pos()[0], n.get_pos()[1], 0]).set(width=0.3, color=WHITE),)
 
-        # ajout de la ligne qui va du parent à l'actuel noeud
+        #adding the line from the parent node to the current node
         if n.parent:
             G = G[:-1] + (Line(start=[n.parent.get_pos()[0], n.parent.get_pos()[1], 0],
                                end=[n.get_pos()[0], n.get_pos()[1], 0],
                                z_index=-1,
                                color=LIGHT_GRAY),) + (G[-1],)
 
-    if region : #si on renvoie le schéma
-        graph = Group(*G)
-        separation = Group(axes, *L)
-        #on ajuste la taille du schéma et on l'accole à gauche de l'arbre
-        separation.match_height(graph).next_to(graph, LEFT)
-        separation.add_updater(lambda m:m.match_height(graph).next_to(graph, LEFT))
-        return graph, separation
-    else :
-        return Group(*G)
+    return Group(*G)
 
-def add_yes_no(line, text, font_size=15):
+
+def add_yes_no(line: Line, text: str, font_size: int = 15) -> Text:
     """
-    génère un texte "yes" ou "no" à coté d'une ligne du graphe
+    generates a "yes" or "no" label next to a line in the tree
+
     Parameters
     ----------
     line : Line
-        la ligne à côté de laquelle afficher le texte
-    text : str
-        "yes" ou "no" pour définir si le texte sera à droite ou à gauche, et si le texte sera yes ou no
+        the line next to which display the label
+    text : "yes" or "no"
+        the label to display, eithe
     font_size : int
-        la taille de la police
+        font size parameter to enable better modeling
 
     Returns
     -------
     Text Mobject
-        le Text Mobject prêt à être affiché
+        the mobject ready to be displayed
     """
-    #updater de position
-    def x_updater(m, line, direction):
-        m.move_to(line).shift((m.width/2+(line.get_length()*0.1)) * direction)
 
-    if text=="yes" :
-        #une ligne yes va vers la droite
-        txt = Text(text, color=WHITE, font_size=font_size).move_to(line).set_z_index(line.z_index, True)
-        txt.shift((txt.width/2+(line.get_length()*0.1)) * RIGHT)
+    # position updater to stick to the line if it moves
+    def x_updater(m, line, direction):
+        m.move_to(line).shift(0.5 * direction)
+
+    if text == "yes":
+        txt = Text(text, color=WHITE, font_size=font_size).move_to(line).shift(0.5 * RIGHT)
         txt.add_updater(lambda m: x_updater(m, line, RIGHT))
-    else :
-        #une ligne no va vers la gauche
-        txt = Text("no", color=WHITE, font_size=font_size).move_to(line).set_z_index(line.z_index, True)
-        txt.shift((txt.width/2+(line.get_length()*0.1)) * LEFT)
-        txt.add_updater(lambda m:x_updater(m, line, LEFT))
+    elif text == "no":
+        txt = Text(text, color=WHITE, font_size=font_size).move_to(line).shift(0.5 * LEFT)
+        txt.add_updater(lambda m: x_updater(m, line, LEFT))
+    else:
+        raise ValueError('bad argument for "text" : can be only "yes" or "no"')
 
     return txt
 
-def remake_node(old_node, *text, color=BLUE_C, cr=0.07):
+
+def remake_node(old_node: Mobject, *text: str, color = BLUE_C) -> Mobject:
+    """
+    a function that will copy parameters from old node and apply a new text and color to return a new node
+
+    Parameters
+    ----------
+    old_node : Mobject
+        any node from the tree, either standard node or root, but not leaf
+    text : str
+        the text that will be put inside the new node
+    color : Color
+        (default:Blue_C, optionnal) if the color needs to be changed, pass the new color in this argument
+
+    Returns
+    -------
+    Mobject
+        the new node mobject
+    """
     N = LabeledNode(Paragraph(*text,
-                              fill_opacity=0.,
                               alignment="center",
-                              font_size=15,
-                              color=BLACK),
-                    cr=cr).move_to(old_node).set_z_index(old_node.z_index, True)
-    N[1].set(fill_color=color, color=color, corner_radius=cr)
-    N[0].set_z_index(N[1].z_index + 1, True)
+                              font_size=old_node[0].font_size,  # copy font size
+                              color=BLACK))\
+        .move_to(old_node) # copy position
+    N[0].set_z_index(3, True)
+    N[1].set(fill_color=color, color=color, z_index=1)  # set the color and z_index
     return N
 
-def remake_leaf(old_leaf, *text):
-    L = Paragraph(*text,
-                  fill_opacity=0.,
-                  alignment="center",
-                  color=BLACK,
-                  font_size=int(old_leaf.font_size * 0.4))\
+def remake_leaf(old_leaf: Mobject, *text: str) -> Mobject:
+    """
+    remake a leaf node
+
+    Parameters
+    ----------
+    old_leaf : Mobject
+        the old leaf to modify
+    text : str
+        if we want to add text to the node
+
+    Returns
+    -------
+    Mobject
+        the new leaf node mobject
+    """
+    # we use paragraph to be able to put text on two lines
+    return Paragraph(*text,
+                     alignment="center",
+                     color=BLACK,
+                     font_size=int(old_leaf.font_size * 0.4)) \
         .add_background_rectangle(color=GREEN, opacity=1, buff=0.1) \
         .move_to(old_leaf)
-    L.set_z_index(L.submobjects[0].z_index+1, True)
-    L.submobjects[0].set_z_index(L.submobjects[0].z_index - 1)
-    return L
+    # copy font size and position
 
-def arbre1():
+#      _       __ _       _ _   _
+#     | |     / _(_)     (_) | (_)
+#   __| | ___| |_ _ _ __  _| |_ _  ___  _ __  ___
+#  / _` |/ _ \  _| | '_ \| | __| |/ _ \| '_ \/ __|
+# | (_| |  __/ | | | | | | | |_| | (_) | | | \__ \
+#  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+def treeA() -> Group :
     #create the tree
     T0 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
     T1 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
@@ -224,17 +222,22 @@ def arbre1():
 # |_|  |_|\__,_|_|_| |_| |___/\___\___|_| |_|\___|
 
 class Intro(MovingCameraScene):
+    """
+    animation used for the introduction
+    it's a decision tree without text slowly being built
+    """
     def construct(self):
 
-        #create an animation for the introduction
-        #the animation is a tree without text being built
-        A = arbre1()
+        # create the tree, and a title
+        A = treeA()
         title = Text("Decision Trees", font_size=40).next_to(A, UP, buff=0.5)
         view = Group(A,title)
 
+        # camera setup
         self.camera.frame.move_to(view).match_width(view).scale(1.2)
         self.wait()
 
+        # create the tree, and write the title in the middle of the animation
         Anims = self.create_tree(A)
         self.play(LaggedStart(AnimationGroup(*Anims, group=view, lag_ratio=1, run_time=15),
                               AnimationGroup(Write(title[:8]), Write(title[8:]), group=title, lag_ratio=0.9, run_time=10),

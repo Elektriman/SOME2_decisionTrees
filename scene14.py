@@ -11,7 +11,7 @@ from manim import *
 from tree import *
 from LabeledNode import LabeledNode
 
-#background color
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _
@@ -152,7 +152,14 @@ def remake_leaf(old_leaf:Mobject, *text:str)->Mobject:
         .move_to(old_leaf)
     #copy font size and position
 
-def treeA():
+#      _       __ _       _ _   _
+#     | |     / _(_)     (_) | (_)
+#   __| | ___| |_ _ _ __  _| |_ _  ___  _ __  ___
+#  / _` |/ _ \  _| | '_ \| | __| |/ _ \| '_ \/ __|
+# | (_| |  __/ | | | | | | | |_| | (_) | | | \__ \
+#  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+def treeA() -> Group :
     # creating tree
     T1 = Tree_filled(Tree_empty(), Tree_empty(), 16.5, "x")
     T2 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
@@ -183,7 +190,6 @@ def treeA():
         remade[2 * i] = remake[i]
 
     return Group(*remade)
-
 
 #  __  __       _
 # |  \/  |     (_)

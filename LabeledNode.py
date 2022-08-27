@@ -58,7 +58,7 @@ class LabeledNode(Mobject):
     @override_animation(Create)
     def custom_create(self):
         """
-        overriding the Create animation
+        overriding the Create animation : Write the text and DrawBorderThenFill the background rectangle
 
         Returns
         -------

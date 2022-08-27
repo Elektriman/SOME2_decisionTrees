@@ -11,9 +11,9 @@ from manim import *
 import pickle
 import numpy as np
 
-# configuration de la couleur d'arrière-plan
-GRIS = rgb_to_color(3 * (36 / 256,))
-config.background_color = rgb_to_color(GRIS)
+# background color
+CUSTOM_GREY = rgb_to_color(3 * (36 / 256,))
+config.background_color = rgb_to_color(CUSTOM_GREY)
 
 #  ______                _   _
 # |  ____|              | | (_)
@@ -87,7 +87,7 @@ class Scene4bis(MovingCameraScene):
                           stroke_opacity=0,
                           height=axes.height*1.4,
                           width=6.5,
-                          fill_color=GRIS,
+                          fill_color=CUSTOM_GREY,
                           z_index=2) \
             .next_to(axes, RIGHT, buff=-0.4)
 
@@ -120,7 +120,7 @@ class Scene4bis(MovingCameraScene):
                                stroke_opacity=0,
                                height=axes.height-0.5,
                                width=87/14,
-                               fill_color=color_gradient([RED, GRIS], 2),
+                               fill_color=color_gradient([RED, CUSTOM_GREY], 2),
                                sheen_direction=RIGHT)\
             .next_to([axes[0].n2p(87/14)[0], -0.2, 0], LEFT, buff=0.59)
 
@@ -128,7 +128,7 @@ class Scene4bis(MovingCameraScene):
                               stroke_opacity=0,
                               height=axes.height-0.5,
                               width=R_underfit.width,
-                              fill_color=color_gradient([RED, GRIS], 2),
+                              fill_color=color_gradient([RED, CUSTOM_GREY], 2),
                               sheen_direction=LEFT) \
             .next_to([axes[0].n2p(87/14)[0], -0.2, 0], RIGHT, buff=0.59)
 

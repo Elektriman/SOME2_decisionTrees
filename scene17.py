@@ -12,7 +12,7 @@ from tree import *
 from LabeledNode import LabeledNode
 import random
 
-#configuration de la couleur d'arrière-plan
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _
@@ -218,7 +218,14 @@ def random_placement(D:Group, node:Mobject)->list[list[float, float, float]]:
                                                0]))
     return res
 
-def TreeA():
+#      _       __ _       _ _   _
+#     | |     / _(_)     (_) | (_)
+#   __| | ___| |_ _ _ __  _| |_ _  ___  _ __  ___
+#  / _` |/ _ \  _| | '_ \| | __| |/ _ \| '_ \/ __|
+# | (_| |  __/ | | | | | | | |_| | (_) | | | \__ \
+#  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+def TreeA() -> Group :
     #create the tree
     T0 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")
     T1 = Tree_filled(Tree_empty(), Tree_empty(), 0, "x")

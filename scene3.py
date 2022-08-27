@@ -10,7 +10,7 @@
 from manim import *
 import os
 
-#configuration de la couleur d'arrière-plan
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  __  __       _

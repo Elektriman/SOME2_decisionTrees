@@ -12,7 +12,7 @@ from tree import *
 from LabeledNode import LabeledNode
 import pickle
 
-#configuration de la couleur d'arrière-plan
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _
@@ -237,7 +237,7 @@ class Scene8bis(MovingCameraScene):
         #fadeout eveything, end of scene
         self.play(*[FadeOut(m) for m in self.mobjects])
 
-    def create_tree(self, E:Group, S:Group):
+    def create_tree(self, E:Group, S:Group) -> tuple[Group,Group] :
         """
         function that animates the creation of the tree together with the separation of the plane
 
@@ -294,16 +294,18 @@ class Scene8bis(MovingCameraScene):
                 #create the correcponding node
                 self.play(AnimationGroup(FadeIn(e[1]), Write(e[0]), lag_ratio=0.4))
                 k += 1
+
             elif isinstance(e, Text) or isinstance(e, Paragraph): #leaf node
                 anims = [FadeIn(e[0]), Write(e[1]), Write(e[2])]
                 self.play(AnimationGroup(*anims, group=e, lag_ratio=0.4))
+
             elif isinstance(e, Line):
                 #create a line between to nodes
-
                 if e.start[0] < e.end[0]: #check first if the lines goes left or right
                     #if the direction is right, the label is "yes"
                     self.play(Create(e), Write(add_yes_no(e, "yes", font_size=int(0.7 * Q[0][0].font_size))))
                 else:
                     #otherwise, the label is "no"
                     self.play(Create(e), Write(add_yes_no(e, "no", font_size=int(0.7 * Q[0][0].font_size))))
-        return E, S
+
+        return E, S # returning the created objects

@@ -11,7 +11,7 @@ from manim import *
 from tree import *
 from LabeledNode import LabeledNode
 
-#background color
+# background color
 config.background_color = rgb_to_color(3*(36/256,))
 
 #  ______                _   _
@@ -158,27 +158,6 @@ def remake_leaf(old_leaf: Mobject, *text: str) -> Mobject:
         .move_to(old_leaf)
     # copy font size and position
 
-def treeE():
-    Tree.reset()
-    # create tree
-    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
-    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0)
-    T3 = Tree_filled(T1, T2, 0, scale=(2,2), xy_ratio=1)
-
-    G = elements_in_order(T3, label_leaves=True)
-
-    G0 = remake_node(G[0], "Rule 1", color=BLUE_E).scale(1.5)
-    G2 = remake_node(G[2], "Left node", color=BLUE_D)
-    G4 = remake_node(G[4], "Right node", color=BLUE_D)
-
-    remake = [G0, G2, G4]
-    remade = [g for g in G]
-
-    for i in range(len(remake)):
-        remade[2 * i] = remake[i]
-
-    return Group(*remade[:5])
-
 def get_ratio(D: Group) -> tuple[int, int]:
     """
     accounts for the populations of green and red dots in the given collection of dots
@@ -200,60 +179,6 @@ def get_ratio(D: Group) -> tuple[int, int]:
         elif d.fill_color == Dot(color=GREEN).color:
             greens += 1
     return reds, greens
-
-def under_ratio(D: Group, text: str, v: ValueTracker) -> Mobject:
-    """
-    creates and return a label to display under a collection of dots.
-    the label here contains the percentage of passing students
-
-    Parameters
-    ----------
-    D : Group
-        the collection of dots
-    text : str
-        the name of the stat to display
-    v : Valuetracker
-        the storage of the value of the percentage
-
-    Returns
-    -------
-    Mobject
-        the label to display
-    """
-    reds, greens = get_ratio(D)
-    v.set_value(100*max(reds, greens)/(reds+greens))
-
-    T = always_redraw(lambda: Text(f"{text}:{int(v.get_value())}%", color=LIGHTER_GREY, font_size=10) \
-                      .next_to(D.submobjects[0], DOWN, buff=0.3))
-
-    return T
-
-def under_ratio2(D: Group, text: str, v: ValueTracker) -> Mobject:
-    """
-        creates and return a label to display under a collection of dots.
-        the label here contains the value of Impurity of the dot collection
-
-        Parameters
-        ----------
-        D : Group
-            the collection of dots
-        text : str
-            the name of the stat to display
-        v : Valuetracker
-            the storage of the value of the Impurity
-
-        Returns
-        -------
-        Mobject
-            the label to display
-        """
-    reds, greens = get_ratio(D)
-    v.set_value(Impurity(greens, reds))
-
-    T = always_redraw(lambda: Text(f"{text}:{truncate(v.get_value(), 2)}", color=LIGHTER_GREY, font_size=10) \
-                      .next_to(D.submobjects[0], DOWN, buff=0.3))
-
-    return T
 
 def weighted_mean(lr: int, lg: int, Il: float, rr: int, rg: int, Ir: float) -> float:
     """
@@ -326,6 +251,88 @@ def truncate(num:float, n:int)->float:
             except:
                 return float(temp)
     return float(temp)
+
+#      _       __ _       _ _   _
+#     | |     / _(_)     (_) | (_)
+#   __| | ___| |_ _ _ __  _| |_ _  ___  _ __  ___
+#  / _` |/ _ \  _| | '_ \| | __| |/ _ \| '_ \/ __|
+# | (_| |  __/ | | | | | | | |_| | (_) | | | \__ \
+#  \__,_|\___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+
+def treeE() -> Group :
+    Tree.reset()
+    # create tree
+    T1 = Tree_filled(Tree_empty(), Tree_empty(), 0)
+    T2 = Tree_filled(Tree_empty(), Tree_empty(), 0)
+    T3 = Tree_filled(T1, T2, 0, scale=(2,2), xy_ratio=1)
+
+    G = elements_in_order(T3, label_leaves=True)
+
+    G0 = remake_node(G[0], "Rule 1", color=BLUE_E).scale(1.5)
+    G2 = remake_node(G[2], "Left node", color=BLUE_D)
+    G4 = remake_node(G[4], "Right node", color=BLUE_D)
+
+    remake = [G0, G2, G4]
+    remade = [g for g in G]
+
+    for i in range(len(remake)):
+        remade[2 * i] = remake[i]
+
+    return Group(*remade[:5])
+
+def under_ratio(D: Group, text: str, v: ValueTracker) -> Mobject:
+    """
+    creates and return a label to display under a collection of dots.
+    the label here contains the percentage of passing students
+
+    Parameters
+    ----------
+    D : Group
+        the collection of dots
+    text : str
+        the name of the stat to display
+    v : Valuetracker
+        the storage of the value of the percentage
+
+    Returns
+    -------
+    Mobject
+        the label to display
+    """
+    reds, greens = get_ratio(D)
+    v.set_value(100*max(reds, greens)/(reds+greens))
+
+    T = always_redraw(lambda: Text(f"{text}:{int(v.get_value())}%", color=LIGHTER_GREY, font_size=10) \
+                      .next_to(D.submobjects[0], DOWN, buff=0.3))
+
+    return T
+
+def under_ratio2(D: Group, text: str, v: ValueTracker) -> Mobject:
+    """
+        creates and return a label to display under a collection of dots.
+        the label here contains the value of Impurity of the dot collection
+
+        Parameters
+        ----------
+        D : Group
+            the collection of dots
+        text : str
+            the name of the stat to display
+        v : Valuetracker
+            the storage of the value of the Impurity
+
+        Returns
+        -------
+        Mobject
+            the label to display
+        """
+    reds, greens = get_ratio(D)
+    v.set_value(Impurity(greens, reds))
+
+    T = always_redraw(lambda: Text(f"{text}:{truncate(v.get_value(), 2)}", color=LIGHTER_GREY, font_size=10) \
+                      .next_to(D.submobjects[0], DOWN, buff=0.3))
+
+    return T
 
 #  __  __       _
 # |  \/  |     (_)
