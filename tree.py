@@ -25,31 +25,31 @@ from abc import ABC
 
 class Tree(ABC) :
     """
-    classe abstraite pour créer une structure d'arbre
+    abstract class for tree structure
 
     Class Attributes
     ----------
     n_tot : int
-        nombre total de noeuds
+        total nodes counter
     all_nodes : list[Tree]
-        la liste de tous les noeuds de l'arbre par ordre d'identifiant
+        list of all the created nodes ordered by ids
     ROOT : Tree
-        la racine de l'arbre
+        the tree's root
 
     Attributes
     ----------
     id : int
-        identifiant du noeud
+        node id
     depth : int
-        donne la profondeur du noeud
+        node depth (0 for the root, 1 for its children, 2 for the grandchildren...)
     pos : list
-        [x,y] la position du noeud dans la représentation graphique
+        [x,y] the position of the node in the graphic representation
     parent : Tree
-        le noeud parent, None si le noeud est la racine
-    scale : float
-        ajustement des distances entre les noeuds
+        the reference to the parent node, except for the ROOT that has None parent
+    scale : (float,float)
+        (scale_x, scale_y) multiplicative ratio to adjust the position of the nodes
     xy_ratio : float
-        ratio qui permet d'avoir un arbre plus large (<1) ou plus haut (>1)
+        ratio that will widen the distance between two children of the same node if bigger
     """
     n_tot = 0
     all_nodes = []
@@ -61,43 +61,55 @@ class Tree(ABC) :
         self.depth = 0
         self.pos = (0,0)
         self.parent = None
-        # attributs de scaling pour l'affichage
-        self.scale = 1
+        # display and scaling attributes
+        self.scale = (1,1)
         self.xy_ratio = 1
-        #ajout à la liste totale de tous les neouds
+        # adding node to the static list of nodes
         self.all_nodes.append(self)
 
-    def define_parent(self, parent):
+    def define_parent(self, parent:Tree):
         """
-        permet d'assigner un parent à un noeud
+        assigns parent to the node
 
         Parameters
         ----------
         parent : Tree
-            noeud parent
+            parent node
         """
         self.parent = parent
 
     def get_pos(self):
         """
-        getter pour la position
+        position getter, using the scaling factors
+
         Returns
         -------
-        tupe
-            position du noeud
+        (float, float)
+            node position
         """
-        return (self.pos[0]*self.scale, self.pos[1]*self.scale)
+        return (self.pos[0]*self.scale[0], self.pos[1]*self.scale[1])
 
     @staticmethod
-    def update_params(self, depth=0):
+    def update_params(self, depth:int=0):
         """
-        mise à jour des paramètres de profondeur, de la position du noeud et mise à jour du noeud racine.
-        seul un noeud parent modifie la position de ses noeuds enfants.
+        update position, depth and tree ROOT
+        the parent parameter is given to its children, and not defined by children
 
         Parameters
         ----------
-        depth : int, optional
-            profondeur du parent. La valeur par défaut est 0.
+        depth : int
+            (default 0, optional) parent's depth
+        """
+        ...
+
+    @staticmethod
+    def isempty(self):
+        """
+        where or not the node is empty
+
+        Returns
+        -------
+        bool
         """
         ...
 
@@ -105,10 +117,19 @@ class Tree(ABC) :
     def __str__(self):
         ...
 
+    @classmethod
+    def reset(cls):
+        """
+        empty the class attributes for the creation of a new Tree
+        """
+        cls.n_tot = 0
+        cls.all_nodes = []
+        cls.ROOT = None
+
     
 class Tree_empty(Tree):
     """
-    sous classe d'arbre vide (fin les branches), ne peut pas être parent d'autre noeuds
+    subclass of the leaf nodes, cannot be a parent node.
     """
     def __init__(self):
         super().__init__()
@@ -123,17 +144,17 @@ class Tree_empty(Tree):
     def returnLNR(self):
         return []
 
-    def update_params(self, depth=0):
+    def update_params(self, depth:int=0):
         self.depth = depth
         if self.depth == 0 :
             Tree.ROOT = self
     
-    def lines(self, region):
+    def lines(self, region:list):
         pass
 
     def __str__(self):
         """
-        réécriture de la fonction str pour un affichage plus propre
+        to string function
 
         Returns
         -------
@@ -144,45 +165,53 @@ class Tree_empty(Tree):
     
 class Tree_filled(Tree):
     """
-    sous classe d'arbre plein
+    subclass of parent node
     
     Attributs
     ----------
     l : Tree
-        branche de gauche
+        left child node
     r : Tree
-        branche de droite
+        right child node
     s : float
-        seuil associé au noeud
+        node's value for the bifurcation rule
     div : string
-        indicateur de l'axe sur lequel faire la division ("x" ou "y")
+        ("x" or "y") axis where the division occurs
     label : str
-        le label associé au noeud
+        node's label
     line : list
-        [[x0,y0],[x1,y1]] la ligne de séparation associée au noeud
+        [[x0,y0],[x1,y1]] separation line associated with the node
     """
     
-    def __init__(self, left:Tree, right:Tree, seuil:float, div="", scale=1, xy_ratio=1):
+    def __init__(self,
+                 left:Tree,
+                 right:Tree,
+                 sep:float,
+                 div="",
+                 scale=(1,1),
+                 xy_ratio=1):
         super().__init__()
-        self.l = left #également bottom
-        self.r = right #également top
-        #ajout du parent pour les deux enfants
+        # if separation is vertical,
+        self.l = left # this is the bottom
+        self.r = right # and this is the top
+        # adding parent parameter for the two children
         self.l.define_parent(self)
         self.r.define_parent(self)
 
-        self.s = seuil
+        # generating the elements for the separation plot and the node's label
+        self.s = sep
         self.div = div
-        self.label = div + "<" + str(seuil)
+        self.label = div + "<" + str(sep)
         self.line = []
 
-        #paramètres communs à tout l'arbre
+        # scaling and display parameters
         self.scale=scale
         self.xy_ratio=xy_ratio
         self.update_params()
 
     def __str__(self):
         """
-        réécriture de la fonction str pour un affichage plus propre
+        to string function
 
         Returns
         -------
@@ -192,69 +221,64 @@ class Tree_filled(Tree):
         return f"FilledNode : depth={self.depth}, id={self.id}, label={self.label}, left={self.l.id}, right={self.r.id}"
     
     def isempty(self):
-        """
-        renvoie True si le noeud est vide
-        """
         return False
     
     def isleaf(self):
         """
-        renvoie True si le noeud est une feuille
+        whether or not the node has empty children
+
+        Returns
+        -------
+        bool
         """
         return (self.l.isempty() and self.r.isempty())
+
     
     def Tdeepcopy(self):
         """
-        renvoie une copie profonde de l'arbre (pas d'aliasing)
+        returns a deep copy of the current node and its children, no aliasing
         """
         return Tree_filled(self.l.Tdeepcopy(), self.r.Tdeepcopy(), self.s, self.div)
-    
-    def returnLNR(self):
-        """
-        renvoie un affichage Gauche Millieu Droite de l'arbre dans une liste de tuples (seuil, axe de division)
-        """
-        return self.l.returnLNR() + [(self.s, self.div)] + self.r.returnLNR()
 
-    def update_params(self, depth=0):
+    def update_params(self, depth:int=0):
         """
-        met à jour les paramètres de l'arbre
+        update tree parameters
 
         Parameters
         ----------
         depth : int
-            la profondeur du noeud parent
+            (default:0, optionnal) parent's node depth
         """
-        #mise à jour de la profondeur
+        # update depth
         self.depth = depth
-        #mise à jour du noeud racine
+        # update ROOT
         if self.depth == 0 :
             Tree.ROOT = self
-        #mise à jour de la position des noeuds enfants
+        # update children positions
         self.l.pos = (self.pos[0] - self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
         self.r.pos = (self.pos[0] + self.xy_ratio/(1+self.depth), self.pos[1] - 0.5)
-        #transmission des valeurs de scaling pour l'affichage
+        # transitive relation of the scaling factors
         self.l.xy_ratio = self.xy_ratio
         self.r.xy_ratio = self.xy_ratio
         self.l.scale = self.scale
         self.r.scale = self.scale
-        #récursion sur les arbres enfants
+        # recursion on the children
         self.l.update_params(depth + 1)
         self.r.update_params(depth + 1)
     
-    def lines(self, region):
+    def lines(self, region:list[list]):
         """
-        associe la ligne associée à la séparation du noeud
+        compute the separation line associated to the node
 
         Parameters
         ----------
         region : list[list]
-            région à décomposer en deux selon le noeud actuel. 
-            La région est la zone rectangulaire entre deux points [[x1,y1],[x2,y2]]
+            region to decompose by the current node
+            [[x1,y1],[x2,y2]] are the corner describing a region of the plan
         """
         
         if self.isleaf():
-            #si c'est une feuille
-            #on coupe en deux selon le seuil et l'axe
+            # if it is a leaf, we cut on the axis
 
             if self.div == "x":
                 self.line = [[self.s, region[0][1]], [self.s ,region[1][1]]]
@@ -262,38 +286,24 @@ class Tree_filled(Tree):
                 self.line = [[region[0][0], self.s], [region[1][0], self.s]]
         
         else :
-            #si ce n'est pas une feuille
-            #on coupe en fonction du seuil et de l'axe
+            # if it is not a leaf, we cut and we compute the two new regions
             if self.div=="x" :
                 #on calcule les deux nouvelles régions créées
                 rightRegion= [[self.s,region[0][1]],[region[1][0],region[1][1]]]
                 leftRegion = [[region[0][0],region[0][1]],[self.s,region[1][1]]]
                 l = [[self.s, region[0][1]], [self.s ,region[1][1]]]
                 
-                #puis on ajoute les division des sous régions en plus de l'actuelle séparation
+                # we add the line to the list and we do a recursion on the child nodes
                 self.line = l
                 self.l.lines(leftRegion)
                 self.r.lines(rightRegion)
 
+            # same thing
             elif self.div=="y" :
                 botRegion = [[region[0][0],region[0][1]],[region[1][0],self.s]]
                 topRegion = [[region[0][0],self.s],[region[1][0],region[1][1]]]
                 l = [[region[0][0], self.s], [region[1][0], self.s]]
+
                 self.line = l
                 self.l.lines(botRegion)
                 self.r.lines(topRegion)
-                
-#  _            _       
-# | |          | |      
-# | |_ ___  ___| |_ ___ 
-# | __/ _ \/ __| __/ __|
-# | ||  __/\__ \ |_\__ \
-#  \__\___||___/\__|___/
-
-if __name__=="__main__":
-    #création d'un arbre test
-    region =  [[30,70],[0,12]]
-
-
-
-
