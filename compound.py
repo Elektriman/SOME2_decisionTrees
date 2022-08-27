@@ -188,7 +188,7 @@ class Compound(MovingCameraScene):
         self.wait()
 
 
-        #crédits
+        #credits
 
         self.wait()
         thanks = Text("Thanks for watching !")

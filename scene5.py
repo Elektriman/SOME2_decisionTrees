@@ -20,6 +20,9 @@ config.background_color = rgb_to_color(3*(36/256,))
 # |_|  |_|\__,_|_|_| |_| |___/\___\___|_| |_|\___|
 
 class Scene5(MovingCameraScene):
+    """
+    this scene introduces the concept of models
+    """
     def construct(self):
 
         #initial figure

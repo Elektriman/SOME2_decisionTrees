@@ -248,7 +248,6 @@ def treeF() -> Group :
 
     return F
 
-
 def treeK() -> Group :
     Tree.reset()
     # create the tree
@@ -314,7 +313,6 @@ def treeQ() -> Group :
     Q = Group(*remade)
 
     return Q
-
 
 #  __  __       _
 # |  \/  |     (_)

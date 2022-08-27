@@ -106,6 +106,9 @@ def add_yes_no(line:Line, text:str, font_size:int=15)->Text:
 # |_|  |_|\__,_|_|_| |_| |___/\___\___|_| |_|\___|
 
 class Scene7_8(MovingCameraScene):
+    """
+    this scene shows how a decision tree is built from a graph, then shows a reading example
+    """
     def construct(self):
         #scenes 7 and 8 have common components so they must be built in the same piece of code
         E = self.scene7()
