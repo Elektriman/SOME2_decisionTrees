@@ -178,4 +178,5 @@ you can use this table matching the video's timestamp to the name of the .py fil
 </table>
 
 ##
-for any question or request feel free to send me an email at julien.crambes@gmail.com or a message on github.
+For any question or request about this code, feel free to send me an email at julien.crambes@gmail.com or send me a private message on github.
+If you have questions about the video montage, please contact mathias.valla@gmail.com .
